@@ -67,7 +67,7 @@ Key configuration options can be found in `vision_claude.py`:
 ## Project Structure
 
 claude-desktop/
-├── README.md
+├── README.md # Project documentation
 ├── pyproject.toml # Project dependencies and metadata
 ├── main.py # Application entry point
 ├── vision_claude.py # Core functionality
