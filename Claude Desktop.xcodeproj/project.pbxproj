@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E84A8BE42CD5D9FC00AC88B7 /* PythonKit in Frameworks */ = {isa = PBXBuildFile; productRef = E84A8BE32CD5D9FC00AC88B7 /* PythonKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E84A8BBE2CD5D70C00AC88B7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E84A8BE42CD5D9FC00AC88B7 /* PythonKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = "Claude Desktop";
 			packageProductDependencies = (
+				E84A8BE32CD5D9FC00AC88B7 /* PythonKit */,
 			);
 			productName = "Claude Desktop";
 			productReference = E84A8BAC2CD5D70A00AC88B7 /* Claude Desktop.app */;
@@ -195,6 +201,9 @@
 			);
 			mainGroup = E84A8BA32CD5D70A00AC88B7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E84A8BDA2CD5D85500AC88B7 /* XCRemoteSwiftPackageReference "PythonKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E84A8BAD2CD5D70A00AC88B7 /* Products */;
 			projectDirPath = "";
@@ -397,14 +406,25 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Claude Desktop/Preview Content\"";
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					/Library/Frameworks,
+					/System/Library/Frameworks,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"/usr/local/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/include/python3.12",
+				);
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "claude-hack.Claude-Desktop";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -422,14 +442,25 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Claude Desktop/Preview Content\"";
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					/Library/Frameworks,
+					/System/Library/Frameworks,
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"/usr/local/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/include/python3.12",
+				);
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "claude-hack.Claude-Desktop";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -541,6 +572,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E84A8BDA2CD5D85500AC88B7 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pvieito/PythonKit.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E84A8BE32CD5D9FC00AC88B7 /* PythonKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E84A8BDA2CD5D85500AC88B7 /* XCRemoteSwiftPackageReference "PythonKit" */;
+			productName = PythonKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E84A8BA42CD5D70A00AC88B7 /* Project object */;
 }

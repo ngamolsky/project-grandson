@@ -1,0 +1,12 @@
+[project]
+name = "claude-desktop"
+version = "0.1.0"
+description = "Improved version of claude desktop backend using OpenInterpeter and vision"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "open-interpreter>=0.4.3",
+    "pillow>=11.0.0",
+    "pyautogui>=0.9.54",
+    "python-dotenv>=1.0.1",
+]
