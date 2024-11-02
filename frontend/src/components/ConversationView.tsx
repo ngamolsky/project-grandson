@@ -1,26 +1,33 @@
 import { DailyProvider } from '../providers/DailyProvider';
 import { useCallState } from '../support/useCallState';
-
-// function getRemoteStream(
-//   callObject: DailyCall | null,
-// ): [MediaStreamTrack | undefined, MediaStreamTrack | undefined] {
-//   const participants = getParticipantList(callObject);
-//   for (const participant of participants) {
-//     if (participant.local) continue;
-//     const audioTrack = participant.tracks.audio.persistentTrack;
-//     const videoTrack = participant.tracks.video.persistentTrack;
-//     if (audioTrack && videoTrack) {
-//       return [audioTrack, videoTrack] as const;
-//     }
-//   }
-//   return [undefined, undefined];
-// }
+import { useCallback, useState } from 'react';
+import { useDaily, DailyAudio } from '@daily-co/daily-react';
 
 function ConversationViewContent() {
   const [_callState, participants] = useCallState();
+  const callObject = useDaily();
+  const [isMuted, setIsMuted] = useState(false);
+
+  const toggleMute = useCallback(() => {
+    if (!callObject) return;
+
+    const newMutedState = !isMuted;
+    callObject.setLocalAudio(!newMutedState);
+    setIsMuted(newMutedState);
+  }, [callObject, isMuted]);
 
   return (
     <div>
+      <DailyAudio
+        onPlayFailed={(e) => {
+          console.error('Audio playback failed:', e);
+        }}
+      />
+
+      <button onClick={toggleMute}>
+        {isMuted ? 'Unmute' : 'Mute'} Microphone
+      </button>
+
       {participants.map((participant) => (
         <div key={participant.session_id}>
           {JSON.stringify(
