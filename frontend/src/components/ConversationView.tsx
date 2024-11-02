@@ -141,11 +141,23 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         )}
       </div>
 
-      <div className="flex-1 space-y-2 overflow-y-auto">
+      <div className="flex flex-col flex-1 overflow-y-auto">
         {messages.map((message, index) => (
-          <div key={index} className="p-2 rounded bg-gray-100">
-            <strong className="text-gray-700">{message.role}:</strong>{' '}
-            <span className="text-gray-900">{message.content}</span>
+          <div
+            key={index}
+            className={`px-3 py-2 rounded-lg max-w-[80%] mb-2 ${
+              message.role === 'USER'
+                ? 'bg-blue-500 text-white ml-auto'
+                : 'bg-gray-100 mr-auto'
+            }`}
+          >
+            <span
+              className={
+                message.role === 'USER' ? 'text-white' : 'text-gray-900'
+              }
+            >
+              {message.content}
+            </span>
           </div>
         ))}
       </div>
