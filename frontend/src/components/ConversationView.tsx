@@ -82,26 +82,6 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         }}
       />
 
-      <div className="flex flex-col gap-5 mb-4">
-        {participants.map((participant) => (
-          <div key={participant.session_id}>
-            <AudioWaveform
-              sessionId={participant.session_id}
-              label={participant.local ? 'Me' : 'Bot'}
-            />
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-4 space-y-2">
-        {messages.map((message, index) => (
-          <div key={index} className="p-2 rounded bg-gray-100">
-            <strong className="text-gray-700">{message.role}:</strong>{' '}
-            <span className="text-gray-900">{message.content}</span>
-          </div>
-        ))}
-      </div>
-
       <div className="flex gap-3">
         <button
           onClick={toggleMute}
@@ -131,6 +111,26 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         >
           <PhoneOff className="w-5 h-5" />
         </button>
+      </div>
+
+      <div className="flex flex-col gap-5 mb-4">
+        {participants.map((participant) => (
+          <div key={participant.session_id}>
+            <AudioWaveform
+              sessionId={participant.session_id}
+              label={participant.local ? 'Me' : 'Bot'}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-4 space-y-2">
+        {messages.map((message, index) => (
+          <div key={index} className="p-2 rounded bg-gray-100">
+            <strong className="text-gray-700">{message.role}:</strong>{' '}
+            <span className="text-gray-900">{message.content}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
