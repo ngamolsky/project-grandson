@@ -3,6 +3,7 @@ import { useCallState } from '../support/useCallState';
 import { useCallback, useState } from 'react';
 import { useDaily, DailyAudio, useDailyEvent } from '@daily-co/daily-react';
 import { AudioWaveform } from './AudioWaveform';
+import { Mic, MicOff, MonitorUp, MonitorStop, PhoneOff } from 'lucide-react';
 
 type Message = {
   role: 'USER' | 'ASSISTANT';
@@ -108,19 +109,17 @@ function ConversationViewContent(props: { onEnd: () => void }) {
       </div>
 
       <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={toggleMute}>
-          {isMuted ? 'Unmute' : 'Mute'} Microphone
-        </button>
+        <button onClick={toggleMute}>{isMuted ? <MicOff /> : <Mic />}</button>
 
         <button onClick={toggleScreenShare}>
-          {isScreenSharing ? 'Stop' : 'Start'} Screen Share
+          {isScreenSharing ? <MonitorStop /> : <MonitorUp />}
         </button>
 
         <button
           onClick={endCall}
           style={{ backgroundColor: '#ff4444', color: 'white' }}
         >
-          End Call
+          <PhoneOff />
         </button>
       </div>
     </div>
