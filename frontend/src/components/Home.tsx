@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ConversationView } from './ConversationView';
 
-const roomUrl = 'https://sstur.daily.co/nKbkfoR9FkLdKQ9l6U3I';
+const roomUrl = 'https://sstur.daily.co/6UyQZqMbo8FkR5AWRKRV';
 
 type ConversationState =
   | {
