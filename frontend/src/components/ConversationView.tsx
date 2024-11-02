@@ -1,7 +1,7 @@
 import { DailyProvider } from '../providers/DailyProvider';
 import { useCallState } from '../support/useCallState';
 import { useCallback, useState } from 'react';
-import { useDaily, DailyAudio, useDailyEvent } from '@daily-co/daily-react';
+import { useDaily, DailyAudio, useAppMessage } from '@daily-co/daily-react';
 import { AudioWaveform } from './AudioWaveform';
 import {
   Mic,
@@ -24,10 +24,12 @@ function ConversationViewContent(props: { onEnd: () => void }) {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [messages, setMessages] = useState<Array<Message>>([]);
 
-  useDailyEvent(
-    'app-message',
-    useCallback((event) => {
-      const data = event.data as Record<string, unknown>;
+  const sendAppMessage = useAppMessage({
+    onAppMessage: (event: {
+      data: Record<string, unknown>;
+      fromId: string;
+    }) => {
+      const data = event.data;
       if (data.label === 'rtvi-ai') {
         const { text } = Object(data.data);
         if (data.type === 'user-transcription') {
@@ -46,8 +48,8 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         fromId: event.fromId,
         data: data,
       });
-    }, []),
-  );
+    },
+  });
 
   const toggleMute = useCallback(() => {
     if (!callObject) return;
@@ -163,8 +165,12 @@ function ConversationViewContent(props: { onEnd: () => void }) {
       </div>
 
       <ChatInput
-        onSend={(_message) => {
-          // TODO
+        onSend={(message) => {
+          sendAppMessage({ message }, '*');
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { role: 'USER', content: message },
+          ]);
         }}
       />
     </div>
