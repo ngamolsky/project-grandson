@@ -26,7 +26,7 @@ export function AudioWaveform({ sessionId, label }: AudioWaveformProps) {
   return (
     <div className="flex items-center gap-3 my-3">
       <div className="min-w-[80px] font-medium text-gray-800">{label}</div>
-      <div className="w-[300px] h-6 bg-gray-900 rounded overflow-hidden p-[3px] shadow-inner">
+      <div className="flex-1 h-6 bg-gray-900 rounded overflow-hidden p-[3px] shadow-inner">
         <div
           ref={barRef}
           className="h-full w-[2%] bg-gradient-to-r from-green-400 to-green-600 rounded-sm transition-all duration-100 ease-out shadow-[0_0_8px_rgba(0,255,136,0.5)]"
