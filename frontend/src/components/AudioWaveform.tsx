@@ -1,4 +1,4 @@
-import { useAudioLevel, useAudioTrack } from '@daily-co/daily-react';
+import { useAudioLevelObserver } from '@daily-co/daily-react';
 import { useCallback, useRef } from 'react';
 
 interface AudioWaveformProps {
@@ -7,11 +7,10 @@ interface AudioWaveformProps {
 }
 
 export function AudioWaveform({ sessionId, label }: AudioWaveformProps) {
-  const audioTrack = useAudioTrack(sessionId);
   const barRef = useRef<HTMLDivElement>(null);
 
-  useAudioLevel(
-    audioTrack?.persistentTrack,
+  useAudioLevelObserver(
+    sessionId,
     useCallback((volume: number) => {
       if (barRef.current) {
         // Convert volume to percentage and ensure minimum visibility
