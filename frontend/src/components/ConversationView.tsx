@@ -125,7 +125,7 @@ function ConversationViewContent(props: { onEnd: () => void }) {
           <AudioWaveform
             key={participant.session_id}
             sessionId={participant.session_id}
-            label={participant.local ? 'Me' : 'Assistant'}
+            label={participant.local ? 'Me' : 'Claude'}
           />
         ))}
       </div>
