@@ -6,5 +6,7 @@
 	<string>Request camera access for WebRTC</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Request microphone access for WebRTC</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>Request screen capture access for WebRTC</string>
 </dict>
 </plist>
