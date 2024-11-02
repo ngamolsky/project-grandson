@@ -3,7 +3,14 @@ import { useCallState } from '../support/useCallState';
 import { useCallback, useState } from 'react';
 import { useDaily, DailyAudio, useDailyEvent } from '@daily-co/daily-react';
 import { AudioWaveform } from './AudioWaveform';
-import { Mic, MicOff, MonitorUp, MonitorStop, PhoneOff } from 'lucide-react';
+import {
+  Mic,
+  MicOff,
+  MonitorUp,
+  MonitorStop,
+  PhoneOff,
+  SendHorizontal,
+} from 'lucide-react';
 
 type Message = {
   role: 'USER' | 'ASSISTANT';
@@ -142,7 +149,41 @@ function ConversationViewContent(props: { onEnd: () => void }) {
           </div>
         ))}
       </div>
+
+      <ChatInput
+        onSend={(_message) => {
+          // TODO
+        }}
+      />
     </div>
+  );
+}
+
+function ChatInput({ onSend }: { onSend: (message: string) => void }) {
+  const [message, setMessage] = useState('');
+  return (
+    <form
+      className="flex gap-2 border-t border-gray-200 pt-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSend(message);
+        setMessage('');
+      }}
+    >
+      <input
+        type="text"
+        className="flex-1 px-4"
+        placeholder="Type a message"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <button
+        type="submit"
+        className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+      >
+        <SendHorizontal />
+      </button>
+    </form>
   );
 }
 

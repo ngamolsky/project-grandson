@@ -57,9 +57,7 @@ export function Home() {
               : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
           }`}
         >
-          {conversationState.name === 'STARTING'
-            ? 'Starting...'
-            : 'Start Conversation'}
+          {conversationState.name === 'STARTING' ? 'Starting...' : 'Start'}
         </button>
       </div>
     );
