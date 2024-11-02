@@ -81,12 +81,19 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         }}
       />
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          marginBottom: '16px',
+        }}
+      >
         {participants.map((participant) => (
           <div key={participant.session_id}>
             <AudioWaveform
               sessionId={participant.session_id}
-              label={participant.local ? 'You' : 'Bot'}
+              label={participant.local ? 'Me' : 'Bot'}
             />
           </div>
         ))}
