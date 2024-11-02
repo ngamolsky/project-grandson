@@ -8,6 +8,7 @@ function ConversationViewContent() {
   const [_callState, participants] = useCallState();
   const callObject = useDaily();
   const [isMuted, setIsMuted] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   const toggleMute = useCallback(() => {
     if (!callObject) return;
@@ -16,6 +17,24 @@ function ConversationViewContent() {
     callObject.setLocalAudio(!newMutedState);
     setIsMuted(newMutedState);
   }, [callObject, isMuted]);
+
+  const toggleScreenShare = useCallback(async () => {
+    if (!callObject) return;
+
+    try {
+      if (isScreenSharing) {
+        await callObject.stopScreenShare();
+        setIsScreenSharing(false);
+      } else {
+        await callObject.startScreenShare();
+        setIsScreenSharing(true);
+      }
+    } catch (e) {
+      console.error('Error toggling screen share:', e);
+      // Reset state in case of error
+      setIsScreenSharing(false);
+    }
+  }, [callObject, isScreenSharing]);
 
   return (
     <div>
@@ -37,9 +56,15 @@ function ConversationViewContent() {
         ))}
       </div>
 
-      <button onClick={toggleMute}>
-        {isMuted ? 'Unmute' : 'Mute'} Microphone
-      </button>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={toggleMute}>
+          {isMuted ? 'Unmute' : 'Mute'} Microphone
+        </button>
+
+        <button onClick={toggleScreenShare}>
+          {isScreenSharing ? 'Stop' : 'Start'} Screen Share
+        </button>
+      </div>
 
       {participants.map((participant) => (
         <div key={participant.session_id}>
