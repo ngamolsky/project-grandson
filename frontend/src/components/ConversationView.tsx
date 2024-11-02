@@ -1,6 +1,6 @@
 import { DailyProvider } from '../providers/DailyProvider';
 import { useCallState } from '../support/useCallState';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDaily, DailyAudio, useAppMessage } from '@daily-co/daily-react';
 import { AudioWaveform } from './AudioWaveform';
 import {
@@ -23,6 +23,15 @@ function ConversationViewContent(props: { onEnd: () => void }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [messages, setMessages] = useState<Array<Message>>([]);
+
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messages.length]);
 
   const sendAppMessage = useAppMessage({
     onAppMessage: (event: {
@@ -143,7 +152,10 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         )}
       </div>
 
-      <div className="flex flex-col flex-1 overflow-y-auto">
+      <div
+        ref={messagesContainerRef}
+        className="flex flex-col flex-1 overflow-y-auto"
+      >
         {messages.map((message, index) => (
           <div
             key={index}
