@@ -25,44 +25,14 @@ export function AudioWaveform({ sessionId, label }: AudioWaveformProps) {
   );
 
   return (
-    <div className="audio-waveform">
-      <div className="label">{label}</div>
-      <div className="indicator-container">
-        <div className="indicator-bar" ref={barRef} />
+    <div className="flex items-center gap-3 my-3">
+      <div className="min-w-[80px] font-medium text-gray-800">{label}</div>
+      <div className="w-[300px] h-6 bg-gray-900 rounded overflow-hidden p-[3px] shadow-inner">
+        <div
+          ref={barRef}
+          className="h-full w-[2%] bg-gradient-to-r from-green-400 to-green-600 rounded-sm transition-all duration-100 ease-out shadow-[0_0_8px_rgba(0,255,136,0.5)]"
+        />
       </div>
-      <style>{`
-        .audio-waveform {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 12px 0;
-        }
-        
-        .label {
-          min-width: 80px;
-          font-weight: 500;
-          color: #2d2d2d;
-        }
-
-        .indicator-container {
-          width: 300px;
-          height: 24px;
-          background: #1a1a1a;
-          border-radius: 4px;
-          overflow: hidden;
-          padding: 3px;
-          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .indicator-bar {
-          width: 2%;
-          height: 100%;
-          background: linear-gradient(90deg, #00ff88, #00cc6f);
-          border-radius: 2px;
-          transition: all 0.1s ease-out;
-          box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
-        }
-      `}</style>
     </div>
   );
 }
