@@ -25,13 +25,13 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         const { text } = Object(data.data);
         if (data.type === 'user-transcription') {
           setMessages((prevMessages) => [
-            ...prevMessages,
             { role: 'USER', content: String(text) },
+            ...prevMessages,
           ]);
         } else if (data.type === 'bot-transcription') {
           setMessages((prevMessages) => [
-            ...prevMessages,
             { role: 'ASSISTANT', content: String(text) },
+            ...prevMessages,
           ]);
         }
       }
@@ -126,7 +126,11 @@ function ConversationViewContent(props: { onEnd: () => void }) {
 
       <div className="mb-4 space-y-2">
         {messages.map((message, index) => (
-          <div key={index} className="p-2 rounded bg-gray-100">
+          <div
+            key={index}
+            className={`p-2 rounded ${message.role === 'USER' ? 'bg-blue-50' : 'bg-gray-50'
+              }`}
+          >
             <strong className="text-gray-700">{message.role}:</strong>{' '}
             <span className="text-gray-900">{message.content}</span>
           </div>
