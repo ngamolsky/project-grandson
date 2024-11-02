@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ConversationView } from './ConversationView';
-
-const roomUrl = 'https://sstur.daily.co/simon-new-2';
+import { ROOM_URL } from '../support/constants';
 
 type ConversationState =
   | {
@@ -43,7 +42,7 @@ export function Home() {
           onClick={async () => {
             setConversationState({ name: 'STARTING' });
             try {
-              setConversationState({ name: 'STARTED', url: roomUrl });
+              setConversationState({ name: 'STARTED', url: ROOM_URL });
             } catch (error) {
               setConversationState({
                 name: 'ERROR_STARTING_CONVERSATION',
