@@ -29,7 +29,7 @@ export function Home() {
 
   if (conversationState.name === 'ERROR_STARTING_CONVERSATION') {
     return (
-      <div style={{ padding: '16px' }}>
+      <div className="p-4">
         <p>Error starting conversation: {conversationState.error}</p>
       </div>
     );
@@ -37,7 +37,7 @@ export function Home() {
 
   if (conversationState.name !== 'STARTED') {
     return (
-      <div>
+      <div className="p-4">
         <button
           disabled={conversationState.name === 'STARTING'}
           onClick={async () => {
@@ -51,8 +51,16 @@ export function Home() {
               });
             }
           }}
+          className={`px-6 py-3 text-lg font-medium text-white rounded-lg transition-colors
+          ${
+            conversationState.name === 'STARTING'
+              ? 'bg-blue-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800'
+          }`}
         >
-          Start Conversation
+          {conversationState.name === 'STARTING'
+            ? 'Starting...'
+            : 'Start Conversation'}
         </button>
       </div>
     );

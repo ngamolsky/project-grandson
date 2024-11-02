@@ -75,21 +75,14 @@ function ConversationViewContent(props: { onEnd: () => void }) {
   }, [callObject]);
 
   return (
-    <div>
+    <div className="p-4">
       <DailyAudio
         onPlayFailed={(e) => {
           console.error('Audio playback failed:', e);
         }}
       />
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px',
-          marginBottom: '16px',
-        }}
-      >
+      <div className="flex flex-col gap-5 mb-4">
         {participants.map((participant) => (
           <div key={participant.session_id}>
             <AudioWaveform
@@ -100,26 +93,43 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         ))}
       </div>
 
-      <div>
+      <div className="mb-4 space-y-2">
         {messages.map((message, index) => (
-          <div key={index}>
-            <strong>{message.role}:</strong> {message.content}
+          <div key={index} className="p-2 rounded bg-gray-100">
+            <strong className="text-gray-700">{message.role}:</strong>{' '}
+            <span className="text-gray-900">{message.content}</span>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={toggleMute}>{isMuted ? <MicOff /> : <Mic />}</button>
+      <div className="flex gap-3">
+        <button
+          onClick={toggleMute}
+          className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+        >
+          {isMuted ? (
+            <MicOff className="w-5 h-5" />
+          ) : (
+            <Mic className="w-5 h-5" />
+          )}
+        </button>
 
-        <button onClick={toggleScreenShare}>
-          {isScreenSharing ? <MonitorStop /> : <MonitorUp />}
+        <button
+          onClick={toggleScreenShare}
+          className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+        >
+          {isScreenSharing ? (
+            <MonitorStop className="w-5 h-5" />
+          ) : (
+            <MonitorUp className="w-5 h-5" />
+          )}
         </button>
 
         <button
           onClick={endCall}
-          style={{ backgroundColor: '#ff4444', color: 'white' }}
+          className="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white"
         >
-          <PhoneOff />
+          <PhoneOff className="w-5 h-5" />
         </button>
       </div>
     </div>
