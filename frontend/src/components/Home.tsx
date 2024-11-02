@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ConversationView } from './ConversationView';
 
-const roomUrl = 'https://sstur.daily.co/6UyQZqMbo8FkR5AWRKRV';
+const roomUrl = 'https://sstur.daily.co/simon-new-2';
 
 type ConversationState =
   | {
@@ -60,7 +60,12 @@ export function Home() {
 
   return (
     <div>
-      <ConversationView url={conversationState.url} />
+      <ConversationView
+        url={conversationState.url}
+        onEnd={() => {
+          setConversationState({ name: 'IDLE' });
+        }}
+      />
     </div>
   );
 }
