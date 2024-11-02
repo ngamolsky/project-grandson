@@ -123,6 +123,17 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         ))}
       </div>
 
+      <div className="flex justify-end pb-2">
+        {messages.length > 0 && (
+          <button
+            onClick={() => setMessages([])}
+            className="text-sm hover:underline"
+          >
+            Clear Chat
+          </button>
+        )}
+      </div>
+
       <div className="flex-1 space-y-2 overflow-y-auto">
         {messages.map((message, index) => (
           <div key={index} className="p-2 rounded bg-gray-100">
