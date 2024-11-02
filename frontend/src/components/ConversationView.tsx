@@ -47,7 +47,6 @@ function ConversationViewContent() {
       <div style={{ display: 'flex', gap: '20px', marginBottom: '16px' }}>
         {participants.map((participant) => (
           <div key={participant.session_id}>
-            <div>{participant.local ? 'You' : 'Bot'}</div>
             <AudioWaveform
               sessionId={participant.session_id}
               label={participant.local ? 'You' : 'Bot'}
@@ -65,20 +64,6 @@ function ConversationViewContent() {
           {isScreenSharing ? 'Stop' : 'Start'} Screen Share
         </button>
       </div>
-
-      {participants.map((participant) => (
-        <div key={participant.session_id}>
-          {JSON.stringify(
-            {
-              local: participant.local,
-              session_id: participant.session_id,
-              user_id: participant.user_id,
-            },
-            null,
-            2,
-          )}
-        </div>
-      ))}
     </div>
   );
 }
