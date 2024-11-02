@@ -66,13 +66,11 @@ export function Home() {
   }
 
   return (
-    <div>
-      <ConversationView
-        url={conversationState.url}
-        onEnd={() => {
-          setConversationState({ name: 'IDLE' });
-        }}
-      />
-    </div>
+    <ConversationView
+      url={conversationState.url}
+      onEnd={() => {
+        setConversationState({ name: 'IDLE' });
+      }}
+    />
   );
 }

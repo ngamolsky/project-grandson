@@ -75,14 +75,14 @@ function ConversationViewContent(props: { onEnd: () => void }) {
   }, [callObject]);
 
   return (
-    <div className="p-4">
+    <div className="p-4 flex-1 h-screen overflow-hidden flex flex-col">
       <DailyAudio
         onPlayFailed={(e) => {
           console.error('Audio playback failed:', e);
         }}
       />
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 justify-center">
         <button
           onClick={toggleMute}
           className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
@@ -113,18 +113,17 @@ function ConversationViewContent(props: { onEnd: () => void }) {
         </button>
       </div>
 
-      <div className="flex flex-col gap-5 mb-4">
+      <div className="flex flex-col mb-4">
         {participants.map((participant) => (
-          <div key={participant.session_id}>
-            <AudioWaveform
-              sessionId={participant.session_id}
-              label={participant.local ? 'Me' : 'Bot'}
-            />
-          </div>
+          <AudioWaveform
+            key={participant.session_id}
+            sessionId={participant.session_id}
+            label={participant.local ? 'Me' : 'Assistant'}
+          />
         ))}
       </div>
 
-      <div className="mb-4 space-y-2">
+      <div className="flex-1 space-y-2 overflow-y-auto">
         {messages.map((message, index) => (
           <div key={index} className="p-2 rounded bg-gray-100">
             <strong className="text-gray-700">{message.role}:</strong>{' '}
