@@ -1,149 +1,279 @@
+#
+# Copyright (c) 2024, Daily
+#
+# SPDX-License-Identifier: BSD 2-Clause License
+#
+
+import asyncio
 import logging
 import os
-import tempfile
-import threading
-import time
-from datetime import datetime
+import sys
+from typing import Tuple
 
-import pyautogui
+import aiohttp
+from config import VisionConfig
 from dotenv import load_dotenv
-from interpreter import interpreter
-
-load_dotenv()
-
-CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
-NUM_SCREENSHOTS_TO_SEND = 2
-SCREENSHOT_INTERVAL = 60
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+from frame_processors.image_processor import (
+    ImageFrameProcessor,
+    ImageManager,
+    ProcessImageSummaryFrame,
+    SummarizeImageFrames,
 )
-logger = logging.getLogger(__name__)
+from frame_processors.transcript_processor import TranscriptProcessor
+from loguru import logger
+from message_handler import MessageHandler
+from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.frames.frames import (
+    BotInterruptionFrame,
+)
+from pipecat.pipeline.parallel_pipeline import ParallelPipeline
+from pipecat.pipeline.pipeline import Pipeline
+from pipecat.pipeline.runner import PipelineRunner
+from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.processors.frameworks.rtvi import (
+    RTVIBotTranscriptionProcessor,
+    RTVIUserTranscriptionProcessor,
+)
+from pipecat.services.anthropic import (
+    AnthropicContextAggregatorPair,
+    AnthropicLLMContext,
+    AnthropicLLMService,
+)
+from pipecat.services.cartesia import CartesiaTTSService
+from pipecat.transports.services.daily import DailyParams, DailyTransport
+from pipecat.transports.services.helpers.daily_rest import DailyRESTHelper
 
-# Disable other loggers
-for log_name, log_obj in logging.Logger.manager.loggerDict.items():
-    if log_name != __name__:
-        if isinstance(log_obj, logging.Logger):
-            log_obj.setLevel(logging.WARNING)
+logger.remove(0)
+logger.add(sys.stderr, level="DEBUG")
 
 
-class VisionClaude:
-    def __init__(self, screenshot_interval=SCREENSHOT_INTERVAL):
-        interpreter.llm.model = CLAUDE_MODEL
-        interpreter.auto_run = True
-        logger.info(f"Initializing VisionClaude with model: {CLAUDE_MODEL}")
+class VisionAssistant:
+    def __init__(self):
+        self.image_manager = ImageManager(
+            max_summary_length=4000, max_recent_frames=VisionConfig.MAX_FRAMES
+        )
+        self.message_handler = None
 
-        self.interpreter = interpreter
-        self.conversation_history = []
-        self.screenshot_interval = screenshot_interval
-        self.should_capture = True
-        self.screenshot_thread = None
-        self.screenshot_history = []
+        load_dotenv(override=True)
+        logger.info("VisionAssistant initialized with narrative focus")
 
-    def capture_screenshot(self):
-        """Capture and save screenshot"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        screenshot = pyautogui.screenshot()
+    async def initialize_services(
+        self,
+        session: aiohttp.ClientSession,
+    ) -> Tuple[DailyTransport, CartesiaTTSService, AnthropicLLMService]:
+        logger.info("Initializing services...")
+        daily_rest_helper = DailyRESTHelper(
+            daily_api_key=os.getenv("DAILY_API_KEY"),
+            daily_api_url=os.getenv("DAILY_API_URL", "https://api.daily.co/v1"),
+            aiohttp_session=session,
+        )
 
-        # Save to temp directory
-        temp_dir = tempfile.gettempdir()
-        filepath = os.path.join(temp_dir, f"screenshot_{timestamp}.png")
-        screenshot.save(filepath)
-        logger.debug(f"Screenshot captured and saved to: {filepath}")
-        return filepath
+        token = await daily_rest_helper.get_token(os.getenv("DAILY_SAMPLE_ROOM_URL"))
+        logger.debug("Obtained Daily token")
 
-    def analyze_image(self, image_path, query=None):
-        """Analyze screenshot using Open Interpreter"""
-        if query is None:
-            query = "What do you see in this image? Please describe it in detail."
+        transport = DailyTransport(
+            os.getenv("DAILY_SAMPLE_ROOM_URL"),
+            token,
+            "Respond bot",
+            DailyParams(
+                audio_out_enabled=True,
+                transcription_enabled=True,
+                vad_enabled=True,
+                vad_analyzer=SileroVADAnalyzer(),
+            ),
+        )
+        logger.debug("Daily transport initialized")
 
-        logger.debug(f"Analyzing image: {image_path}")
-        logger.debug(f"Query: {query}")
+        tts = CartesiaTTSService(
+            api_key=os.getenv("CARTESIA_API_KEY"),
+            voice_id=VisionConfig.VOICE_ID,
+        )
+        logger.debug("TTS service initialized")
 
-        # Create the prompt for the interpreter
-        prompt = f"""
-        Analyze the screenshot at: {image_path}
-        Question: {query}
+        llm = AnthropicLLMService(
+            api_key=os.getenv("ANTHROPIC_API_KEY"),
+            model="claude-3-5-sonnet-20240620",
+            enable_prompt_caching_beta=True,
+        )
+
+        vision_llm = AnthropicLLMService(
+            api_key=os.getenv("ANTHROPIC_API_KEY"),
+            model="claude-3-5-sonnet-20240620",
+            enable_prompt_caching_beta=True,
+        )
+        logger.debug("LLM services initialized")
+
+        return transport, tts, llm, vision_llm
+
+    async def setup_pipeline(
+        self,
+        transport: DailyTransport,
+        tts: CartesiaTTSService,
+        llm: AnthropicLLMService,
+        vision_llm: AnthropicLLMService,
+        context: AnthropicLLMContext,
+    ) -> Tuple[PipelineTask, AnthropicContextAggregatorPair]:
+        logger.info("Setting up pipeline...")
+        llm_context_aggregator = llm.create_context_aggregator(context)
+
+        self.message_handler = MessageHandler(context, self.image_manager)
+        summarize_processor = SummarizeImageFrames(
+            self.image_manager,
+            summary_interval_seconds=2.0,  # More frequent updates
+        )
+
+        # Create the summarize processor first so we can pass it to ProcessImageSummaryFrame
+        summarize_processor = SummarizeImageFrames(self.image_manager)
+
+        pipeline = Pipeline(
+            [
+                transport.input(),
+                ImageFrameProcessor(self.image_manager),
+                ParallelPipeline(
+                    # Main conversation pipeline
+                    [
+                        TranscriptProcessor(self.message_handler, self.image_manager),
+                        RTVIUserTranscriptionProcessor(),
+                        llm_context_aggregator.user(),
+                        llm,  # LLM
+                        RTVIBotTranscriptionProcessor(),
+                        tts,  # TTS
+                        transport.output(),  # Transport bot output
+                        llm_context_aggregator.assistant(),  # Assistant spoken response
+                    ],
+                    # Continuous image summary pipeline
+                    [
+                        summarize_processor,
+                        vision_llm,
+                        ProcessImageSummaryFrame(
+                            self.image_manager, summarize_processor
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        logger.debug("Pipeline configured with narrative focus")
+        return PipelineTask(
+            pipeline, PipelineParams(allow_interruptions=True, enable_metrics=True)
+        ), llm_context_aggregator
+
+    async def run(self):
+        logger.info("Starting VisionAssistant...")
+        async with aiohttp.ClientSession() as session:
+            transport, tts, llm, vision_llm = await self.initialize_services(session)
+
+            context = self.setup_initial_context()
+            task, context_aggregator = await self.setup_pipeline(
+                transport, tts, llm, vision_llm, context
+            )
+
+            # Set up event handlers
+            self.setup_event_handlers(transport, task, context_aggregator)
+
+            # Run the pipeline
+            logger.info("Starting pipeline runner...")
+            runner = PipelineRunner()
+            await runner.run(task)
+
+    def setup_initial_context(self):
+        logger.info("Setting up initial context...")
+        system_prompt = """
+        You are an AI assistant designed to help older individuals use applications on their smartphones or computers. 
+        Your responses will be converted to audio and relayed back to the user, so they should be brief, clear, and conversational. 
+        Always provide just one step at a time, waiting for the user's response before moving on to the next step.
+
+        Be kind and patient.
+
+        Your response will be turned into speech so use only simple words and punctuation.
         """
 
-        response = self.interpreter.chat(prompt)
-        logger.debug("Analysis complete")
-        logger.debug(f"Response received: {response[:100]}...")  # Log first 100 chars
-
-        self.conversation_history.append(
-            {
-                "query": query,
-                "response": response,
-                "image_path": image_path,
-                "timestamp": datetime.now(),
-            }
+        anthropic_context = AnthropicLLMContext(
+            messages=[
+                {
+                    "role": "user",
+                    "content": system_prompt,
+                },
+                {
+                    "role": "user",
+                    "content": "Start the conversation by saying 'hello'.",
+                },
+            ],
         )
-        return response
 
-    def start_auto_capture(self):
-        """Start automatic screenshot capture in a separate thread"""
-        logger.debug("Starting automatic screenshot capture")
-        self.should_capture = True
-        self.screenshot_thread = threading.Thread(target=self._auto_capture_loop)
-        self.screenshot_thread.daemon = True  # Thread will stop when main program exits
-        self.screenshot_thread.start()
+        # Initialize context setup code here
+        logger.debug("Initial context created with system prompt and greeting")
+        return anthropic_context
 
-    def stop_auto_capture(self):
-        """Stop automatic screenshot capture"""
-        logger.debug("Stopping automatic screenshot capture")
-        self.should_capture = False
+    def setup_event_handlers(
+        self,
+        transport: DailyTransport,
+        task: PipelineTask,
+        context_aggregator: AnthropicContextAggregatorPair,
+    ) -> None:
+        """Set up Daily transport event handlers for participa  nt management and messaging.
 
-    def _auto_capture_loop(self):
-        """Internal method to continuously capture screenshots"""
-        logger.debug("Auto capture loop started")
-        while self.should_capture:
-            image_path = self.capture_screenshot()
-            self.screenshot_history.append(
-                {"path": image_path, "timestamp": datetime.now()}
+        Args:
+            transport: The Daily transport instance
+            task: The pipeline task instance
+        """
+        logger.info("Setting up event handlers...")
+
+        @transport.event_handler("on_first_participant_joined")
+        async def on_first_participant_joined(transport, participant):
+            participant_id = participant["id"]
+            logger.info(f"First participant joined with ID: {participant_id}")
+
+            # Start capturing participant's transcription and screen video
+            await transport.capture_participant_transcription(participant_id)
+            await transport.capture_participant_video(
+                participant_id,
+                framerate=VisionConfig.FRAMES_PER_SECOND,
+                video_source="screenVideo",
             )
-            # Remove old screenshots if we have more than NUM_SCREENSHOTS_TO_SEND
-            while len(self.screenshot_history) > NUM_SCREENSHOTS_TO_SEND:
-                old_screenshot = self.screenshot_history.pop(0)
-                # Delete the file
-                try:
-                    os.remove(old_screenshot["path"])
-                    logger.debug(f"Deleted old screenshot: {old_screenshot['path']}")
-                except OSError as e:
-                    logger.warning(f"Failed to delete old screenshot: {e}")
-            logger.debug(f"Screenshot captured: {image_path}")
-            time.sleep(self.screenshot_interval)
+            logger.debug("Started capturing participant transcription and video")
 
-    def get_recent_screenshots(self, count=NUM_SCREENSHOTS_TO_SEND):
-        """Get the most recent screenshot(s)"""
-        return self.screenshot_history[-count:] if self.screenshot_history else []
+            # Initialize the conversation
+            context_frame = context_aggregator.user().get_context_frame()
+            await task.queue_frames([context_frame])
+            logger.debug("Queued initial context frame")
 
-    def interactive_session(self):
-        """Start an interactive session"""
-        logger.debug("Starting Vision Claude interactive session")
-        self.start_auto_capture()  # Start automatic captures
+        @transport.event_handler("on_app_message")
+        async def on_app_message(transport, message, sender):
+            logger.debug(f"Received app message: {message}")
 
-        try:
-            while True:
-                user_input = input("\nYour question (or 'exit', 'quit', 'q' to quit): ")
+            message_text = message.get("message", "")
+            frames = self.image_manager.get_frames()
 
-                if user_input.lower() in ["exit", "quit", "q"]:
-                    logger.info("Ending interactive session")
-                    break
+            if not frames:
+                logger.debug("No image frames available")
+                return
 
-                # Get most recent screenshot and analyze it
-                recent_screenshots = self.get_recent_screenshots()
-                if recent_screenshots:
-                    latest_screenshot = recent_screenshots[-1]
-                    response = self.analyze_image(latest_screenshot["path"], user_input)
-                    logger.debug(
-                        f"Analysis of screenshot from {latest_screenshot['timestamp']}:"
-                    )
-                    logger.debug(response)
-                else:
-                    logger.warning(
-                        "No screenshots available yet. Please wait a moment and try again."
-                    )
-        finally:
-            # Ensure cleanup happens before exit
-            self.stop_auto_capture()
+            # Handle interruption message
+            if message_text == VisionConfig.INTERRUPT_MESSAGE:
+                logger.info("Processing interruption request")
+                await task.queue_frames([BotInterruptionFrame()])
+                return
+
+            await self.message_handler.handle_new_message(message_text, frames)
+
+            context_frame = context_aggregator.user().get_context_frame()
+            await task.queue_frames([context_frame])
+            logger.debug("Queued message context frame for processing")
+
+
+if __name__ == "__main__":
+    import sys
+
+    if "--reload" in sys.argv:
+        from hot_reload import run_with_reload
+
+        run_with_reload(__file__)
+    else:
+        # Your existing main code
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        )
+        assistant = VisionAssistant()
+        asyncio.run(assistant.run())

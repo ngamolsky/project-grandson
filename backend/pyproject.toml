@@ -32,30 +32,11 @@ dev = [
     "setuptools_scm~=8.1.0",
 ]
 
-anthropic = [ "anthropic~=0.34.0" ]
-assemblyai = [ "assemblyai~=0.34.0" ]
-aws = [ "boto3~=1.35.27" ]
-azure = [ "azure-cognitiveservices-speech~=1.40.0" ]
-canonical = [ "aiofiles~=24.1.0" ]
-cartesia = [ "cartesia~=1.0.13", "websockets~=13.1" ]
-daily = [ "daily-python~=0.12.0" ]
-deepgram = [ "deepgram-sdk~=3.7.3" ]
-elevenlabs = [ "websockets~=13.1" ]
-examples = [ "python-dotenv~=1.0.1", "flask~=3.0.3", "flask_cors~=4.0.1" ]
-fal = [ "fal-client~=0.4.1" ]
-gladia = [ "websockets~=13.1" ]
-google = [ "google-generativeai~=0.8.3", "google-cloud-texttospeech~=2.17.2" ]
-gstreamer = [ "pygobject~=3.48.2" ]
-langchain = [ "langchain~=0.2.14", "langchain-community~=0.2.12", "langchain-openai~=0.1.20" ]
-livekit = [ "livekit~=0.17.5", "livekit-api~=0.7.1", "tenacity~=8.5.0" ]
-lmnt = [ "lmnt~=1.1.4" ]
-local = [ "pyaudio~=0.2.14" ]
-moondream = [ "einops~=0.8.0", "timm~=1.0.8", "transformers~=4.44.0" ]
-openai = [ "openai~=1.50.2", "websockets~=13.1", "python-deepcompare~=1.0.1" ]
-playht = [ "pyht~=0.1.4", "websockets~=13.1" ]
-silero = [ "onnxruntime~=1.19.2" ]
-websocket = [ "websockets~=13.1", "fastapi~=0.115.0" ]
-whisper = [ "faster-whisper~=1.0.3" ]
+[tool.uv]
+dev-dependencies = [
+    "watchdog>=6.0.0",
+]
+
 
 [tool.uv.sources]
 pipecat-ai = { path = "pipecat", editable = true }
