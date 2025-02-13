@@ -16,6 +16,7 @@ dependencies = [
     "pydantic~=2.8.2",
     "pyloudnorm~=0.1.1",
     "resampy~=0.4.3",
+    "pipecat",
     "pipecat-ai[anthropic,cartesia,daily,openai,silero]",
     "fastapi[standard]>=0.115.5",
 ]
@@ -38,6 +39,3 @@ dev-dependencies = [
     "watchdog>=6.0.0",
 ]
 
-
-[tool.uv.sources]
-pipecat-ai = { path = "pipecat", editable = true }
