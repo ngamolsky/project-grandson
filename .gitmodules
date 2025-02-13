@@ -1,3 +1,0 @@
-[submodule "backend/pipecat"]
-	path = backend/pipecat
-	url = https://github.com/pipecat-ai/pipecat

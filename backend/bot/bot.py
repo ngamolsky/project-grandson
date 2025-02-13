@@ -4,13 +4,11 @@
 # SPDX-License-Identifier: BSD 2-Clause License
 #
 
+import argparse
 import asyncio
-import logging
 import os
-import sys
 from typing import Tuple
 
-import aiohttp
 from config import VisionConfig
 from dotenv import load_dotenv
 from frame_processors.image_processor import (
@@ -41,10 +39,6 @@ from pipecat.services.anthropic import (
 )
 from pipecat.services.cartesia import CartesiaTTSService
 from pipecat.transports.services.daily import DailyParams, DailyTransport
-from pipecat.transports.services.helpers.daily_rest import DailyRESTHelper
-
-logger.remove(0)
-logger.add(sys.stderr, level="DEBUG")
 
 
 class VisionAssistant:
@@ -59,20 +53,13 @@ class VisionAssistant:
 
     async def initialize_services(
         self,
-        session: aiohttp.ClientSession,
+        room_url: str,
+        token: str,
     ) -> Tuple[DailyTransport, CartesiaTTSService, AnthropicLLMService]:
-        logger.info("Initializing services...")
-        daily_rest_helper = DailyRESTHelper(
-            daily_api_key=os.getenv("DAILY_API_KEY"),
-            daily_api_url=os.getenv("DAILY_API_URL", "https://api.daily.co/v1"),
-            aiohttp_session=session,
-        )
-
-        token = await daily_rest_helper.get_token(os.getenv("DAILY_SAMPLE_ROOM_URL"))
-        logger.debug("Obtained Daily token")
+        logger.info(f"Initializing services for room: {room_url}")
 
         transport = DailyTransport(
-            os.getenv("DAILY_SAMPLE_ROOM_URL"),
+            room_url,
             token,
             "Respond bot",
             DailyParams(
@@ -158,23 +145,24 @@ class VisionAssistant:
             pipeline, PipelineParams(allow_interruptions=True, enable_metrics=True)
         ), llm_context_aggregator
 
-    async def run(self):
+    async def run(self, room_url: str, token: str):
         logger.info("Starting VisionAssistant...")
-        async with aiohttp.ClientSession() as session:
-            transport, tts, llm, vision_llm = await self.initialize_services(session)
+        transport, tts, llm, vision_llm = await self.initialize_services(
+            room_url, token
+        )
 
-            context = self.setup_initial_context()
-            task, context_aggregator = await self.setup_pipeline(
-                transport, tts, llm, vision_llm, context
-            )
+        context = self.setup_initial_context()
+        task, context_aggregator = await self.setup_pipeline(
+            transport, tts, llm, vision_llm, context
+        )
 
-            # Set up event handlers
-            self.setup_event_handlers(transport, task, context_aggregator)
+        # Set up event handlers
+        self.setup_event_handlers(transport, task, context_aggregator)
 
-            # Run the pipeline
-            logger.info("Starting pipeline runner...")
-            runner = PipelineRunner()
-            await runner.run(task)
+        # Run the pipeline
+        logger.info("Starting pipeline runner...")
+        runner = PipelineRunner()
+        await runner.run(task)
 
     def setup_initial_context(self):
         logger.info("Setting up initial context...")
@@ -263,17 +251,14 @@ class VisionAssistant:
 
 
 if __name__ == "__main__":
-    import sys
+    parser = argparse.ArgumentParser(description="Project Grandson")
+    parser.add_argument("--room-url", type=str, help="Room URL")
+    parser.add_argument("--token", type=str, help="Daily token")
+    parser.add_argument("--reload", action="store_true", help="Reload code on change")
 
-    if "--reload" in sys.argv:
-        from hot_reload import run_with_reload
+    args = parser.parse_args()
 
-        run_with_reload(__file__)
-    else:
-        # Your existing main code
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        )
-        assistant = VisionAssistant()
-        asyncio.run(assistant.run())
+    logger.info(f"Running with args: {args.room_url} {args.token} {args.reload}")
+
+    assistant = VisionAssistant()
+    asyncio.run(assistant.run(args.room_url, args.token))

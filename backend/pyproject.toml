@@ -1,5 +1,5 @@
 [project]
-name = "claude-desktop"
+name = "project-grandson"
 version = "0.1.0"
 description = "Improved version of claude desktop backend using OpenInterpeter and vision"
 readme = "README.md"
@@ -17,6 +17,7 @@ dependencies = [
     "pyloudnorm~=0.1.1",
     "resampy~=0.4.3",
     "pipecat-ai[anthropic,cartesia,daily,openai,silero]",
+    "fastapi[standard]>=0.115.5",
 ]
 
 

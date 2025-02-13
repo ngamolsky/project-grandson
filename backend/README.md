@@ -1,4 +1,4 @@
-# Claude Desktop Vision Assistant
+# Project Grandson
 
 A Python-based desktop application that uses Claude 3.5 Sonnet to analyze your screen in real-time through screenshots and answer questions about what it sees.
 
@@ -20,7 +20,7 @@ A Python-based desktop application that uses Claude 3.5 Sonnet to analyze your s
 1. Clone the repository:
 
 ```bash
-cd claude-desktop
+cd project-grandson
 ```
 
 2. Create a virtual environment and install dependencies using UV:
