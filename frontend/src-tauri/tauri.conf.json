@@ -1,20 +1,20 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "project-grandson",
+  "productName": "Claude Desktop",
   "version": "0.1.0",
-  "identifier": "com.project-grandson.app",
+  "identifier": "com.sstur.claude-desktop.app",
   "build": {
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "project-grandson",
-        "width": 800,
-        "height": 600,
+        "title": "Claude Desktop",
+        "width": 512,
+        "height": 540,
         "alwaysOnTop": true
       }
     ],
